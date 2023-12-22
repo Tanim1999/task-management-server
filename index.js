@@ -34,6 +34,61 @@ async function run() {
             res.send(result);
             console.log(result)
         });
+        app.get('/tasks', async (req, res) => {
+            try {
+
+                
+                const email = req.query.email
+                const status = req.query.status
+
+
+                const query = {}
+
+
+                if (email) {
+                    query.email = email
+                }
+                if (status) {
+                    query.status = status
+                }
+
+
+                const cursor = taskCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
+            } catch (error) {
+                console.error('Error fetching assets:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
+        app.get('/tasks/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await taskCollection.findOne(query);
+            res.send(result);
+        })
+        app.patch('/tasks/:id', async (req, res) => {
+            const task = req.body;
+            const id = req.params.id;
+            const options = { upsert: true };
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                   
+                    title:  task.title,
+                    
+                    priority:  task.priority,
+                    description:  task.description,
+                    status:task.status
+
+                }
+            }
+
+            const result = await taskCollection.updateOne(filter, updatedDoc, options)
+            res.send(result);
+        })
+
 
 
 
